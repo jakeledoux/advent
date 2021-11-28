@@ -1,6 +1,6 @@
 # Advent of Code
 
-https://adventofcode.com
+A repo to keep track of my [Advent of Code](https://adventofcode.com) solutions.
 
 ## Directory structure
 
