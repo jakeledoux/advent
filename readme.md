@@ -6,8 +6,8 @@ A repo to keep track of my [Advent of Code](https://adventofcode.com) solutions.
 
 ```
 advent/
-├── 2021/
-│   ├── 01/
+├── YYYY/
+│   ├── day-DD/
 │   │   ├── src/
 │   │   │   └── main.rs
 │   │   ├── Cargo.toml
