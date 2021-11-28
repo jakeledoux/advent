@@ -7,7 +7,7 @@ https://adventofcode.com
 ```
 advent/
 ├── 2021/
-│   ├── 1/
+│   ├── 01/
 │   │   ├── src/
 │   │   │   └── main.rs
 │   │   ├── Cargo.toml
