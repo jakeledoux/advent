@@ -9,12 +9,14 @@ const INPUT: &str = include_str!("../input.txt");
 
 const BOARD_WIDTH: usize = 5;
 
+/// Represents whether a space in a bingo board has been crossed off.
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 enum BingoSpace {
-    Checked,
-    Empty,
+    Crossed,
+    Blank,
 }
 
+/// Represents a stateful bingo board
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 struct BingoBoard {
     numbers: [usize; 25],
@@ -22,19 +24,22 @@ struct BingoBoard {
 }
 
 impl BingoBoard {
+    /// Initialize from row-wise flat array
     pub fn new(numbers: &[usize; 25]) -> Self {
         Self {
             numbers: *numbers,
-            status: [BingoSpace::Empty; 25],
+            status: [BingoSpace::Blank; 25],
         }
     }
 
+    /// Cross off `n` if on board
     pub fn update(&mut self, n: usize) {
         if let Some(i) = self.numbers.iter().position(|&e| e == n) {
-            self.status[i] = BingoSpace::Checked;
+            self.status[i] = BingoSpace::Crossed;
         }
     }
 
+    /// Returns `true` if the board has a bingo
     pub fn check_won(&self) -> bool {
         let rows: Vec<Vec<_>> = self
             .status
@@ -54,7 +59,7 @@ impl BingoBoard {
         for group in rows.iter().chain(cols.iter()) {
             if group
                 .iter()
-                .all(|space| matches!(space, BingoSpace::Checked))
+                .all(|space| matches!(space, BingoSpace::Crossed))
             {
                 return true;
             }
@@ -62,12 +67,13 @@ impl BingoBoard {
         false
     }
 
+    /// Calculate winning score
     fn score(&self, winning_number: usize) -> usize {
         self.numbers
             .iter()
             .zip(self.status.iter())
             .filter_map(|(&n, status)| match status {
-                BingoSpace::Empty => Some(n),
+                BingoSpace::Blank => Some(n),
                 _ => None,
             })
             .sum::<usize>()
@@ -91,23 +97,11 @@ impl FromStr for BingoBoard {
     }
 }
 
-fn part_one(input: &[&str]) -> usize {
-    let numbers: Vec<usize> = input[0].split(',').map(|s| s.parse().unwrap()).collect();
-    let boards = &input[1..];
-    let mut boards: Vec<BingoBoard> = boards
-        .split(|s| s.is_empty())
-        .filter_map(|slice| {
-            let board = slice.join(" ");
-            match board.is_empty() {
-                false => Some(board.parse().unwrap()),
-                true => None,
-            }
-        })
-        .collect();
-
+fn part_one(numbers: &[usize], boards: &[BingoBoard]) -> usize {
+    let mut numbers = numbers.iter().copied();
+    let mut boards = boards.to_vec();
     numbers
-        .iter()
-        .find_map(move |&n| {
+        .find_map(move |n| {
             for board in boards.iter_mut() {
                 board.update(n);
                 if board.check_won() {
@@ -119,26 +113,15 @@ fn part_one(input: &[&str]) -> usize {
         .unwrap()
 }
 
-fn part_two(input: &[&str]) -> usize {
-    let mut numbers = input[0].split(',').map(|s| s.parse().unwrap());
-    let boards = &input[1..];
-    let mut boards: Vec<BingoBoard> = boards
-        .split(|s| s.is_empty())
-        .filter_map(|slice| {
-            let board = slice.join(" ");
-            match board.is_empty() {
-                false => Some(board.parse().unwrap()),
-                true => None,
-            }
-        })
-        .collect();
-
+fn part_two(numbers: &[usize], boards: &[BingoBoard]) -> usize {
+    let mut numbers = numbers.iter().copied();
+    let mut boards = boards.to_vec();
     loop {
         let n = numbers.next().unwrap();
         let mut board = boards[0];
         boards = boards
-            .iter_mut()
-            .filter_map(|&mut mut board| {
+            .iter()
+            .filter_map(|&(mut board)| {
                 board.update(n);
                 if board.check_won() {
                     None
@@ -156,7 +139,21 @@ fn part_two(input: &[&str]) -> usize {
 
 fn main() {
     let input: Vec<_> = INPUT.lines().map(|s| s.trim()).collect();
+    // Get number sequence
+    let numbers: Vec<usize> = input[0].split(',').map(|s| s.parse().unwrap()).collect();
+    // Treat the remaining lines as board definitions
+    let boards = &input[1..];
+    let boards: Vec<BingoBoard> = boards
+        .split(|s| s.is_empty())
+        .filter_map(|slice| {
+            let board = slice.join(" ");
+            match board.is_empty() {
+                false => Some(board.parse().unwrap()),
+                true => None,
+            }
+        })
+        .collect();
 
-    dbg!(part_one(&input));
-    dbg!(part_two(&input));
+    dbg!(part_one(&numbers, &boards));
+    dbg!(part_two(&numbers, &boards));
 }
