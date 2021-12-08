@@ -3,28 +3,35 @@
 use std::collections::{HashMap, HashSet};
 
 use itertools::Itertools;
+use lazy_static::lazy_static;
 
 const SAMPLE: &str = include_str!("../sample.txt");
 const INPUT: &str = include_str!("../input.txt");
 
 type SignalPattern = HashSet<char>;
+type WiringPermutations = HashMap<char, HashSet<char>>;
+type WireMap = HashMap<char, char>;
 
-fn digits() -> Vec<HashSet<char>> {
-    [
-        vec!['a', 'b', 'c', 'e', 'f', 'g'],
-        vec!['c', 'f'],
-        vec!['a', 'c', 'd', 'e', 'g'],
-        vec!['a', 'c', 'd', 'f', 'g'],
-        vec!['b', 'c', 'd', 'f'],
-        vec!['a', 'b', 'd', 'f', 'g'],
-        vec!['a', 'b', 'd', 'e', 'f', 'g'],
-        vec!['a', 'c', 'f'],
-        vec!['a', 'b', 'c', 'd', 'e', 'f', 'g'],
-        vec!['a', 'b', 'c', 'd', 'f', 'g'],
-    ]
-    .iter()
-    .map(|v| HashSet::from_iter(v.iter().copied()))
-    .collect()
+lazy_static! {
+    static ref DIGITS: [SignalPattern; 10] = {
+        [
+            vec!['a', 'b', 'c', 'e', 'f', 'g'],
+            vec!['c', 'f'],
+            vec!['a', 'c', 'd', 'e', 'g'],
+            vec!['a', 'c', 'd', 'f', 'g'],
+            vec!['b', 'c', 'd', 'f'],
+            vec!['a', 'b', 'd', 'f', 'g'],
+            vec!['a', 'b', 'd', 'e', 'f', 'g'],
+            vec!['a', 'c', 'f'],
+            vec!['a', 'b', 'c', 'd', 'e', 'f', 'g'],
+            vec!['a', 'b', 'c', 'd', 'f', 'g'],
+        ]
+        .iter()
+        .map(|v| SignalPattern::from_iter(v.iter().copied()))
+        .collect_vec()
+        .try_into()
+        .expect("This cannot fail.")
+    };
 }
 
 fn identify_digit(signals: &SignalPattern) -> Option<u8> {
@@ -38,10 +45,10 @@ fn identify_digit(signals: &SignalPattern) -> Option<u8> {
 }
 
 fn reduce_options(
-    taken: &HashMap<char, char>,
-    mut remaining: HashMap<char, HashSet<char>>,
+    taken: &WireMap,
+    mut remaining: WiringPermutations,
     test_cases: &[SignalPattern],
-) -> Option<HashMap<char, char>> {
+) -> Option<WireMap> {
     let mut taken = taken.to_owned();
 
     let mut changes_made = 1;
@@ -61,7 +68,7 @@ fn reduce_options(
             .filter(|(k, v)| {
                 if v.len() == 1 {
                     changes_made += 1;
-                    taken.insert(*k, v.into_iter().copied().next().unwrap());
+                    taken.insert(*k, v.iter().copied().next().unwrap());
                     false
                 } else {
                     true
@@ -76,12 +83,12 @@ fn reduce_options(
     }
 
     // Walk back up if options depleted for any remnant
-    if remaining.iter().any(|(_k, v)| v.len() == 0) {
+    if remaining.iter().any(|(_k, v)| v.is_empty()) {
         return None;
     }
 
     // Check if remnants have been depleted
-    if remaining.len() == 0 {
+    if remaining.is_empty() {
         return Some(taken);
     }
 
@@ -116,47 +123,42 @@ fn part_two(input: &[(Vec<SignalPattern>, Vec<SignalPattern>)]) -> usize {
     input
         .iter()
         .map(|(patterns, output)| {
-            let options = filter_obvious(&patterns);
-            let brute_forced_map = reduce_options(&HashMap::new(), options, patterns).unwrap();
+            let options = filter_obvious(patterns);
+            let brute_forced_map = reduce_options(&WireMap::new(), options, patterns).unwrap();
 
-            let digits = crate::digits();
-            let answer: usize = output
+            output
                 .iter()
                 .map(|digi_pattern| {
-                    let corrected_pattern: HashSet<char> = digi_pattern
+                    let corrected_pattern: SignalPattern = digi_pattern
                         .iter()
                         .map(|c| *brute_forced_map.get(c).unwrap())
                         .collect();
-                    digits.iter().position(|d| d == &corrected_pattern).unwrap()
+                    DIGITS.iter().position(|d| d == &corrected_pattern).unwrap()
                 })
                 .join("")
-                .parse()
-                .unwrap();
-            dbg!(answer)
+                .parse::<usize>()
+                .unwrap()
         })
         .sum()
 }
 
-fn check_valid_mapping(inputs: &[SignalPattern], map: &HashMap<char, char>) -> bool {
-    let digits = crate::digits();
+fn check_valid_mapping(inputs: &[SignalPattern], map: &WireMap) -> bool {
     inputs
         .iter()
-        .all(|pattern| digits.contains(&pattern.iter().map(|c| *map.get(c).unwrap()).collect()))
+        .all(|pattern| DIGITS.contains(&pattern.iter().map(|c| *map.get(c).unwrap()).collect()))
 }
 
-fn filter_obvious(patterns: &[SignalPattern]) -> HashMap<char, HashSet<char>> {
-    let mut options: HashMap<char, HashSet<char>> = ('a'..='g')
-        .map(|a| (a, ('a'..='g').collect::<HashSet<_>>()))
+fn filter_obvious(patterns: &[SignalPattern]) -> WiringPermutations {
+    let mut options: WiringPermutations = ('a'..='g')
+        .map(|a| (a, ('a'..='g').collect::<SignalPattern>()))
         .collect();
-
-    let digits = crate::digits();
 
     for pattern in patterns {
         let possibilities = match pattern.len() {
-            2 => &digits[1],
-            3 => &digits[7],
-            4 => &digits[4],
-            _ => &digits[8],
+            2 => &DIGITS[1],
+            3 => &DIGITS[7],
+            4 => &DIGITS[4],
+            _ => &DIGITS[8],
         };
         for &character in pattern {
             let option = options.get_mut(&character).unwrap();
@@ -184,6 +186,6 @@ fn main() {
         })
         .collect();
 
-    // dbg!(part_one(&input));
+    dbg!(part_one(&input));
     dbg!(part_two(&input));
 }
