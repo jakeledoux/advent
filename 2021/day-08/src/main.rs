@@ -1,12 +1,17 @@
 #![allow(dead_code)]
 
 use std::collections::{HashMap, HashSet};
+use std::io::stdout;
 
+use crossterm::style::{Color, Print, ResetColor, SetBackgroundColor, SetForegroundColor};
+use crossterm::{cursor, execute};
 use itertools::Itertools;
 use lazy_static::lazy_static;
 
 const SAMPLE: &str = include_str!("../sample.txt");
 const INPUT: &str = include_str!("../input.txt");
+const VISUALIZE: bool = option_env!("VISUALIZE").is_some();
+static mut ITERATIONS: u128 = 0;
 
 type SignalPattern = HashSet<char>;
 type WiringPermutations = HashMap<char, HashSet<char>>;
@@ -89,9 +94,49 @@ fn reduce_options(
 
     // Check if remnants have been depleted
     if remaining.is_empty() {
+        if VISUALIZE {
+            std::thread::sleep(std::time::Duration::from_millis(1));
+            let iterations = unsafe { ITERATIONS }.to_string();
+            execute!(
+                stdout(),
+                SetForegroundColor(Color::DarkCyan),
+                Print(format!(" {}  ", taken.values().join("")).to_string()),
+                Print("          ".to_string()),
+                SetForegroundColor(Color::DarkGrey),
+                Print(format!(
+                    "  {}",
+                    std::iter::repeat('0').take(10 - iterations.len()).join("")
+                )),
+                ResetColor,
+                Print(format!("{}", iterations).to_string()),
+                cursor::MoveToColumn(11),
+                SetForegroundColor(Color::Black),
+            )
+            .unwrap();
+        }
         return if check_valid_mapping(test_cases, &taken) {
+            if VISUALIZE {
+                execute!(
+                    stdout(),
+                    SetBackgroundColor(Color::DarkGreen),
+                    Print("  PASSED  ".to_string()),
+                    ResetColor,
+                    cursor::MoveToColumn(33),
+                )
+                .unwrap();
+            }
             Some(taken)
         } else {
+            if VISUALIZE {
+                execute!(
+                    stdout(),
+                    SetBackgroundColor(Color::DarkRed),
+                    Print("  FAILED  ".to_string()),
+                    ResetColor,
+                    cursor::MoveToColumn(0),
+                )
+                .unwrap();
+            }
             None
         };
     }
@@ -104,6 +149,9 @@ fn reduce_options(
             remaining.remove(&remnant).unwrap();
 
             // Recurse through implications
+            unsafe {
+                ITERATIONS += 1;
+            }
             if let Some(result) = reduce_options(&taken, remaining, test_cases) {
                 if check_valid_mapping(test_cases, &result) {
                     return Some(result);
@@ -157,7 +205,7 @@ fn part_two(input: &[(Vec<SignalPattern>, Vec<SignalPattern>)]) -> usize {
             let options = filter_obvious(patterns);
             let brute_forced_map = reduce_options(&WireMap::new(), options, patterns).unwrap();
 
-            output
+            let num = output
                 .iter()
                 .map(|digi_pattern| {
                     let corrected_pattern: SignalPattern = digi_pattern
@@ -168,7 +216,15 @@ fn part_two(input: &[(Vec<SignalPattern>, Vec<SignalPattern>)]) -> usize {
                 })
                 .join("")
                 .parse::<usize>()
-                .unwrap()
+                .unwrap();
+
+            if VISUALIZE {
+                unsafe {
+                    ITERATIONS = 0;
+                }
+                execute!(stdout(), Print(format!("   {:^6}\n", num).to_string()),).unwrap();
+            }
+            num
         })
         .sum()
 }
@@ -190,6 +246,33 @@ fn main() {
         })
         .collect();
 
-    dbg!(part_one(&input));
-    dbg!(part_two(&input));
+    if VISUALIZE {
+        execute!(
+            stdout(),
+            cursor::Hide,
+            crossterm::terminal::Clear(crossterm::terminal::ClearType::All),
+            Print(" abcdefg |  status  | iterations | result \n".to_string()),
+            Print("------------------------------------------\n".to_string()),
+        )
+        .unwrap();
+
+        let result = part_two(&input);
+        execute!(
+            stdout(),
+            SetForegroundColor(Color::DarkGrey),
+            Print("------------------------------------------\n".to_string()),
+            SetForegroundColor(Color::White),
+            SetBackgroundColor(Color::DarkBlue),
+            Print(" Result: "),
+            ResetColor,
+            Print("  "),
+            Print(format!("{}", result)),
+            ResetColor,
+            cursor::Show
+        )
+        .unwrap();
+    } else {
+        dbg!(part_one(&input));
+        dbg!(part_two(&input));
+    }
 }
