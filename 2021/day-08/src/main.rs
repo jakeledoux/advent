@@ -89,7 +89,11 @@ fn reduce_options(
 
     // Check if remnants have been depleted
     if remaining.is_empty() {
-        return Some(taken);
+        return if check_valid_mapping(test_cases, &taken) {
+            Some(taken)
+        } else {
+            None
+        };
     }
 
     // Iterate through remaining possibilities
@@ -108,6 +112,33 @@ fn reduce_options(
         }
     }
     None
+}
+
+fn check_valid_mapping(inputs: &[SignalPattern], map: &WireMap) -> bool {
+    inputs
+        .iter()
+        .all(|pattern| DIGITS.contains(&pattern.iter().map(|c| *map.get(c).unwrap()).collect()))
+}
+
+fn filter_obvious(patterns: &[SignalPattern]) -> WiringPermutations {
+    let mut options: WiringPermutations = ('a'..='g')
+        .map(|a| (a, ('a'..='g').collect::<SignalPattern>()))
+        .collect();
+
+    for pattern in patterns {
+        let possibilities = match pattern.len() {
+            2 => &DIGITS[1],
+            3 => &DIGITS[7],
+            4 => &DIGITS[4],
+            _ => &DIGITS[8],
+        };
+        for &character in pattern {
+            let option = options.get_mut(&character).unwrap();
+            *option = option.intersection(possibilities).copied().collect();
+        }
+    }
+
+    options
 }
 
 fn part_one(input: &[(Vec<SignalPattern>, Vec<SignalPattern>)]) -> usize {
@@ -142,35 +173,8 @@ fn part_two(input: &[(Vec<SignalPattern>, Vec<SignalPattern>)]) -> usize {
         .sum()
 }
 
-fn check_valid_mapping(inputs: &[SignalPattern], map: &WireMap) -> bool {
-    inputs
-        .iter()
-        .all(|pattern| DIGITS.contains(&pattern.iter().map(|c| *map.get(c).unwrap()).collect()))
-}
-
-fn filter_obvious(patterns: &[SignalPattern]) -> WiringPermutations {
-    let mut options: WiringPermutations = ('a'..='g')
-        .map(|a| (a, ('a'..='g').collect::<SignalPattern>()))
-        .collect();
-
-    for pattern in patterns {
-        let possibilities = match pattern.len() {
-            2 => &DIGITS[1],
-            3 => &DIGITS[7],
-            4 => &DIGITS[4],
-            _ => &DIGITS[8],
-        };
-        for &character in pattern {
-            let option = options.get_mut(&character).unwrap();
-            *option = option.intersection(possibilities).copied().collect();
-        }
-    }
-
-    options
-}
-
 fn main() {
-    let input: Vec<_> = SAMPLE
+    let input: Vec<_> = INPUT
         .lines()
         .filter_map(|s| {
             if let Some((patterns, output)) = s.trim().split_once('|') {
