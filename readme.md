@@ -12,6 +12,7 @@ advent/
 ├── YYYY/
 │   ├── day-DD/
 │   │   ├── src/
+│   │   │   ├── lib.rs
 │   │   │   └── main.rs
 │   │   ├── Cargo.toml
 │   │   ├── input.txt
