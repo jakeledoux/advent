@@ -12,3 +12,7 @@ itertools = "0.10.3"
 petgraph = "0.6.0"
 
 [features]
+
+[lib]
+doctest = false
+
