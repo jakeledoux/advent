@@ -16,3 +16,6 @@ petgraph = "0.6.0"
 [lib]
 doctest = false
 
+[[bin]]
+name = "day-12"
+test = false

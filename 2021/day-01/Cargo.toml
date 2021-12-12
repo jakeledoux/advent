@@ -13,3 +13,6 @@ itertools = "0.10.1"
 [lib]
 doctest = false
 
+[[bin]]
+name = "day-01"
+test = false

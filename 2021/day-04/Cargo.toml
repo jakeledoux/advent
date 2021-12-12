@@ -13,3 +13,6 @@ cached = "0.26.2"
 [lib]
 doctest = false
 
+[[bin]]
+name = "day-04"
+test = false
