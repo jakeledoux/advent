@@ -17,6 +17,7 @@ advent/
 │   │   ├── Cargo.toml
 │   │   ├── input.txt
 │   │   └── sample.txt
+│   ├── Cargo.toml
 │   └── readme.md
 ├── .gitignore
 └── readme.md
