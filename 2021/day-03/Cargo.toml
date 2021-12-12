@@ -8,4 +8,5 @@ authors = ["Jake Ledoux <contactjakeledoux@gmail.com>"]
 
 [dependencies]
 array2d = "0.2.1"
+cached = "0.26.2"
 itertools = "0.10.1"

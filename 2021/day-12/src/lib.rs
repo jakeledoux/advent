@@ -55,7 +55,7 @@ pub fn part_two(input: &'static str) -> usize {
 }
 
 #[cached]
-pub fn parse_input(input: &'static str) -> CaveMap {
+fn parse_input(input: &'static str) -> CaveMap {
     input
         .lines()
         .map(|edge| edge.split_once('-').unwrap())
@@ -63,4 +63,21 @@ pub fn parse_input(input: &'static str) -> CaveMap {
             map.add_edge(edge.0, edge.1, ());
             map
         })
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::{part_one, part_two};
+
+    const SAMPLE: &str = include_str!("../sample.txt");
+
+    #[test]
+    fn test_part_one_sample() {
+        assert_eq!(part_one(SAMPLE), 226);
+    }
+
+    #[test]
+    fn test_part_two_sample() {
+        assert_eq!(part_two(SAMPLE), 3509);
+    }
 }

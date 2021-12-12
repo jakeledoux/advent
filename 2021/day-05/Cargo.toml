@@ -7,4 +7,5 @@ authors = ["Jake Ledoux <contactjakeledoux@gmail.com>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+cached = "0.26.2"
 vector2d = "2.2.0"
