@@ -1,3 +1,5 @@
+use std::collections::HashSet;
+
 use cached::proc_macro::cached;
 use itertools::Itertools;
 
@@ -7,7 +9,7 @@ enum Fold {
     Vertical(usize),
 }
 
-#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash)]
 struct Dot {
     y: usize,
     x: usize,
@@ -24,11 +26,11 @@ impl Dot {
     }
 }
 
-fn render_dots(dots: &[Dot]) -> String {
+fn render_dots(dots: HashSet<Dot>) -> String {
     let mut output = String::new();
 
     let (mut x, mut y) = (0, 0);
-    for dot in dots {
+    for dot in dots.iter().sorted() {
         while y < dot.y {
             output.push('\n');
             y += 1;
@@ -45,12 +47,8 @@ fn render_dots(dots: &[Dot]) -> String {
     output
 }
 
-fn fold_dots(fold: Fold, dots: &[Dot]) -> Vec<Dot> {
-    dots.iter()
-        .map(|dot| dot.fold(fold))
-        .sorted()
-        .dedup()
-        .collect()
+fn fold_dots(fold: Fold, dots: &HashSet<Dot>) -> HashSet<Dot> {
+    dots.iter().map(|dot| dot.fold(fold)).sorted().collect()
 }
 
 pub fn part_one(input: &'static str) -> usize {
@@ -65,11 +63,11 @@ pub fn part_one(input: &'static str) -> usize {
 pub fn part_two(input: &'static str) -> String {
     let (mut dots, folds) = parse_input(input);
     folds.iter().for_each(|&fold| dots = fold_dots(fold, &dots));
-    render_dots(&dots)
+    render_dots(dots)
 }
 
 #[cached]
-fn parse_input(input: &'static str) -> (Vec<Dot>, Vec<Fold>) {
+fn parse_input(input: &'static str) -> (HashSet<Dot>, Vec<Fold>) {
     let (dots, folds) = input.split_once("\n\n").unwrap();
     (
         dots.lines()
