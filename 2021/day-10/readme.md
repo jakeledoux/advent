@@ -1,3 +1,3 @@
-# Day 10
+# 2021: Day 10
 
 https://adventofcode.com/2021/day/10

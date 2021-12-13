@@ -1,5 +1,5 @@
 [package]
-name = "day-05"
+name = "aoc-2021-day-05"
 version = "0.1.0"
 edition = "2021"
 authors = ["Jake Ledoux <contactjakeledoux@gmail.com>"]
@@ -14,5 +14,5 @@ vector2d = "2.2.0"
 doctest = false
 
 [[bin]]
-name = "day-05"
+name = "aoc-2021-day-05"
 test = false

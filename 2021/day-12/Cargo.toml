@@ -1,5 +1,5 @@
 [package]
-name = "day-12"
+name = "aoc-2021-day-12"
 version = "0.1.0"
 edition = "2021"
 authors = ["Jake Ledoux <contactjakeledoux@gmail.com>"]
@@ -17,5 +17,5 @@ petgraph = "0.6.0"
 doctest = false
 
 [[bin]]
-name = "day-12"
+name = "aoc-2021-day-12"
 test = false

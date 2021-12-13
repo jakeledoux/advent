@@ -1,5 +1,5 @@
 [package]
-name = "day-02"
+name = "aoc-2021-day-02"
 version = "0.1.0"
 edition = "2021"
 authors = ["Jake Ledoux <contactjakeledoux@gmail.com>"]
@@ -13,5 +13,5 @@ cached = "0.26.2"
 doctest = false
 
 [[bin]]
-name = "day-02"
+name = "aoc-2021-day-02"
 test = false
