@@ -1,7 +1,6 @@
 use std::str::FromStr;
 
 use anyhow::anyhow;
-use cached::proc_macro::cached;
 
 const BOARD_WIDTH: usize = 5;
 
@@ -135,7 +134,6 @@ pub fn part_two(input: &'static str) -> usize {
     }
 }
 
-#[cached]
 fn parse_input(input: &'static str) -> (Vec<usize>, Vec<BingoBoard>) {
     let input: Vec<_> = input.lines().map(|s| s.trim()).collect();
     // Get number sequence

@@ -7,7 +7,6 @@ authors = ["Jake Ledoux <contactjakeledoux@gmail.com>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-cached = "0.26.2"
 itertools = "0.10.3"
 petgraph = "0.6.0"
 
@@ -17,3 +16,5 @@ doctest = false
 [[bin]]
 name = "aoc-2021-day-14"
 test = false
+
+[features]

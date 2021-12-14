@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use cached::proc_macro::cached;
 use vector2d::Vector2D;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -63,7 +62,6 @@ pub fn part_two(input: &'static str) -> usize {
     Line::find_intersections(&input).len()
 }
 
-#[cached]
 fn parse_input(input: &'static str) -> Vec<Line> {
     input
         .lines()

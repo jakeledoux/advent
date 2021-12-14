@@ -1,5 +1,3 @@
-use cached::proc_macro::cached;
-
 #[derive(Clone, Copy, Debug)]
 enum Group {
     Parens,
@@ -99,7 +97,6 @@ pub fn part_two(input: &'static str) -> usize {
     points[(points.len() + 1) / 2 - 1]
 }
 
-#[cached]
 fn parse_input(input: &'static str) -> Vec<&'static str> {
     input
         .lines()

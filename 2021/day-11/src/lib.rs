@@ -1,5 +1,3 @@
-use cached::proc_macro::cached;
-
 #[derive(Debug, Clone, Copy)]
 enum Octopus {
     Unflashed(usize),
@@ -126,7 +124,6 @@ pub fn part_two(input: &'static str) -> usize {
     (1..).find(|_| octos.step() == octos.cells.len()).unwrap()
 }
 
-#[cached]
 fn parse_input(input: &'static str) -> Octopuses {
     let input: Vec<Vec<usize>> = input
         .lines()

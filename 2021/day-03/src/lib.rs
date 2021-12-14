@@ -1,7 +1,6 @@
 use std::num::ParseIntError;
 
 use array2d::Array2D;
-use cached::proc_macro::cached;
 use itertools::Itertools;
 
 enum Commonality {
@@ -108,7 +107,6 @@ pub fn part_two(input: &'static str) -> usize {
     oxygen_rating * co2_rating
 }
 
-#[cached]
 fn parse_input(input: &'static str) -> Array2D<char> {
     let input: Vec<Vec<_>> = input
         .lines()

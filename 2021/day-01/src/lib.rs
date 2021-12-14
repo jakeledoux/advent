@@ -1,4 +1,3 @@
-use cached::proc_macro::cached;
 use itertools::Itertools;
 
 pub fn part_one(input: &'static str) -> usize {
@@ -16,7 +15,6 @@ pub fn part_two(input: &'static str) -> usize {
         .count()
 }
 
-#[cached]
 fn parse_input(input: &'static str) -> Vec<usize> {
     input
         .lines()

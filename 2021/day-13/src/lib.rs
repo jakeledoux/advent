@@ -1,6 +1,5 @@
 use std::collections::HashSet;
 
-use cached::proc_macro::cached;
 use itertools::Itertools;
 
 #[derive(Clone, Copy, Debug)]
@@ -66,7 +65,6 @@ pub fn part_two(input: &'static str) -> String {
     render_dots(dots)
 }
 
-#[cached]
 fn parse_input(input: &'static str) -> (HashSet<Dot>, Vec<Fold>) {
     let (dots, folds) = input.split_once("\n\n").unwrap();
     (

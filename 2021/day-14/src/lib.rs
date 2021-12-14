@@ -1,6 +1,5 @@
 use std::collections::HashMap;
 
-use cached::proc_macro::cached;
 use itertools::Itertools;
 use petgraph::graphmap::DiGraphMap;
 
@@ -57,7 +56,6 @@ pub fn part_two(input: &'static str) -> usize {
     max - min
 }
 
-#[cached]
 fn parse_input(input: &'static str) -> Polymer {
     let (template, rules) = input.split_once("\n\n").unwrap();
     let polymap = template

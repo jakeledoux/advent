@@ -1,7 +1,5 @@
 use std::collections::HashSet;
 
-use cached::proc_macro::cached;
-
 fn is_lowest_neighbor(map: &[Vec<usize>], pos: (usize, usize)) -> Option<usize> {
     let this_point = map[pos.1][pos.0];
 
@@ -84,7 +82,6 @@ pub fn part_two(input: &'static str) -> usize {
     basins.iter().rev().take(3).product()
 }
 
-#[cached]
 fn parse_input(input: &'static str) -> Vec<Vec<usize>> {
     input
         .lines()

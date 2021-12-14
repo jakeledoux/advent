@@ -1,6 +1,5 @@
 use std::collections::{HashMap, HashSet};
 
-use cached::proc_macro::cached;
 use itertools::Itertools;
 use lazy_static::lazy_static;
 
@@ -167,7 +166,6 @@ pub fn part_two(input: &'static str) -> usize {
         .sum()
 }
 
-#[cached]
 fn parse_input(input: &'static str) -> Vec<(Vec<SignalPattern>, Vec<SignalPattern>)> {
     input
         .lines()

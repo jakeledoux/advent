@@ -1,7 +1,5 @@
 use std::ops::Range;
 
-use cached::proc_macro::cached;
-
 enum BurnRate {
     Linear,
     Triangular,
@@ -51,7 +49,6 @@ pub fn part_two(input: &'static str) -> usize {
         .unwrap()
 }
 
-#[cached]
 fn parse_input(input: &'static str) -> Vec<usize> {
     input
         .split(',')

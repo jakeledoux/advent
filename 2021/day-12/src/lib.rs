@@ -1,4 +1,3 @@
-use cached::proc_macro::cached;
 use itertools::Itertools;
 use petgraph::graphmap::UnGraphMap;
 
@@ -54,7 +53,6 @@ pub fn part_two(input: &'static str) -> usize {
     recursive_solver(&["start"], "end", &input, &make_filter(1, 2)).len()
 }
 
-#[cached]
 fn parse_input(input: &'static str) -> CaveMap {
     input
         .lines()

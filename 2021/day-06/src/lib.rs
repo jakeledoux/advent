@@ -1,4 +1,3 @@
-use cached::proc_macro::cached;
 fn load_generation(fish: &[usize]) -> [usize; 9] {
     fish.iter().fold([0; 9], |mut gen, &f| {
         gen[f] += 1;
@@ -30,7 +29,6 @@ pub fn part_two(input: &'static str) -> usize {
     simulate_population(&input, 256)
 }
 
-#[cached]
 fn parse_input(input: &'static str) -> Vec<usize> {
     input
         .trim()

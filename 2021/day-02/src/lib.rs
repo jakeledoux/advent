@@ -1,5 +1,3 @@
-use cached::proc_macro::cached;
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Direction {
     Up(isize),
@@ -67,7 +65,6 @@ pub fn part_two(input: &'static str) -> isize {
     sub.pos * sub.depth
 }
 
-#[cached]
 fn parse_input(input: &'static str) -> Vec<&'static str> {
     input
         .lines()
