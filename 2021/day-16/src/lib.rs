@@ -28,7 +28,6 @@ pub enum Operation {
     Product,
     Minimum,
     Maximum,
-    // Expecting a fifth operator here
     GreaterThan,
     LessThan,
     EqualTo,
@@ -42,7 +41,7 @@ impl TryFrom<u8> for Operation {
             1 => Ok(Self::Product),
             2 => Ok(Self::Minimum),
             3 => Ok(Self::Maximum),
-            // No OP with ID 4
+            // ID 4 is a literal
             5 => Ok(Self::GreaterThan),
             6 => Ok(Self::LessThan),
             7 => Ok(Self::EqualTo),
