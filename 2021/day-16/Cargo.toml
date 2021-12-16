@@ -1,0 +1,21 @@
+[package]
+name = "aoc-2021-day-16"
+version = "0.1.0"
+edition = "2021"
+authors = ["Jake Ledoux <contactjakeledoux@gmail.com>"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bitreader = "0.3.4"
+itertools = "0.10.3"
+thiserror = "1.0.30"
+
+[lib]
+doctest = false
+
+[[bin]]
+name = "aoc-2021-day-16"
+test = false
+
+[features]
