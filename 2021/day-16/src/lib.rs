@@ -14,6 +14,10 @@ pub enum PacketError {
     ArgumentError(usize, Operation),
     #[error("invalid operator ID `{0}`")]
     OperatorError(u8),
+    #[error("malformed literal value")]
+    ValueError,
+    #[error(transparent)]
+    HexError(#[from] std::num::ParseIntError),
 }
 
 enum LengthKind {
@@ -150,8 +154,8 @@ impl<'a> TryFrom<BitReader<'a>> for Packet {
                     .into_iter()
                     .map(usize::from)
                     .reduce(|a, b| a << 4 | b)
-                    .unwrap();
-                PacketKind::Literal(value)
+                    .ok_or(PacketError::ValueError);
+                PacketKind::Literal(value?)
             }
             operation => {
                 // I
@@ -170,8 +174,8 @@ impl<'a> TryFrom<BitReader<'a>> for Packet {
                     }
                 } {
                     let reader = sub_packet_reader.relative_reader();
-                    let packet = Self::try_from(reader).unwrap();
-                    sub_packet_reader.skip(packet.length).unwrap();
+                    let packet = Self::try_from(reader)?;
+                    sub_packet_reader.skip(packet.length)?;
                     packets.push(packet);
                 }
                 bit_reader.skip(sub_packet_reader.position())?;
@@ -197,8 +201,8 @@ impl FromStr for Packet {
             .chars()
             .chunks(2)
             .into_iter()
-            .map(|mut chunk| u8::from_str_radix(&chunk.join(""), 16).unwrap())
-            .collect_vec();
+            .map(|mut chunk| u8::from_str_radix(&chunk.join(""), 16))
+            .collect::<Result<Vec<_>, _>>()?;
         let bit_reader = BitReader::new(&bytes);
         Self::try_from(bit_reader)
     }
