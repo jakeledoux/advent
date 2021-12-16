@@ -82,14 +82,14 @@ impl Packet {
                 match operation {
                     Operation::Sum => packets.iter().sum(),
                     Operation::Product => packets.iter().product(),
-                    Operation::Minimum => *packets
-                        .iter()
-                        .min()
-                        .ok_or_else(|| PacketError::ArgumentError(packets.len(), *operation))?,
-                    Operation::Maximum => *packets
-                        .iter()
-                        .max()
-                        .ok_or_else(|| PacketError::ArgumentError(packets.len(), *operation))?,
+                    Operation::Minimum | Operation::Maximum => *{
+                        match operation {
+                            Operation::Minimum => packets.iter().min(),
+                            Operation::Maximum => packets.iter().max(),
+                            _ => unreachable!(),
+                        }
+                    }
+                    .ok_or_else(|| PacketError::ArgumentError(packets.len(), *operation))?,
                     Operation::LessThan | Operation::GreaterThan | Operation::EqualTo => {
                         if let [a, b] = &packets[..] {
                             Ok(match operation {
