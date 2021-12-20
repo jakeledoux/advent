@@ -90,6 +90,7 @@ pub fn parse_snailfish(input: &str) -> Result<Vec<Token>, SnailfishError> {
 }
 
 pub fn explode(tokens: &[Token], recurse: bool) -> Vec<Token> {
+    println!("Exploding: {}", tokens_to_string(&tokens));
     let mut tokens = tokens.to_vec();
     let mut depth = 0;
     let mut pos = 0;
@@ -167,6 +168,7 @@ pub fn explode(tokens: &[Token], recurse: bool) -> Vec<Token> {
 }
 
 pub fn split(tokens: &[Token], recurse: bool) -> Vec<Token> {
+    println!("Splitting: {}", tokens_to_string(&tokens));
     let mut tokens = tokens.to_vec();
     let mut pos = 0;
 
@@ -262,18 +264,10 @@ pub fn part_one(input: &'static str) -> usize {
 
 pub fn part_two(input: &'static str) -> usize {
     let input = parse_input(input);
-    // for (a, b) in input.iter().tuple_combinations() {
-    //     println!(
-    //         "  {}\n+ {}\n= {}",
-    //         tokens_to_string(&a),
-    //         tokens_to_string(&b),
-    //         tokens_to_string(&add(&a, &b))
-    //     );
-    // }
     input
         .into_iter()
         .tuple_combinations()
-        .map(|(a, b)| magnitude(&add(&a, &b)))
+        .flat_map(|(a, b)| [magnitude(&add(&a, &b)), magnitude(&add(&b, &a))])
         .max()
         .unwrap()
 }
@@ -401,8 +395,8 @@ mod tests {
             ),
             (
                 vec![
-                    "[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]",
                     "[[2,[[7,7],7]],[[5,8],[[9,3],[0,2]]]]",
+                    "[[[0,[5,8]],[[1,7],[9,6]]],[[4,[1,2]],[[1,4],2]]]",
                 ],
                 "[[[[7,8],[6,6]],[[6,0],[7,7]]],[[[7,8],[8,8]],[[7,9],[0,6]]]]",
             ),
