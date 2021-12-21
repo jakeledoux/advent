@@ -4,6 +4,7 @@ use std::{
 };
 
 use cached::proc_macro::cached;
+use rayon::prelude::*;
 
 pub enum Status {
     Playing,
@@ -85,37 +86,39 @@ pub fn quantum_game(players: (Player, Player)) -> [usize; 2] {
     const ROLLS: [(usize, usize); 7] = [(3, 1), (4, 3), (5, 6), (6, 7), (7, 6), (8, 3), (9, 1)];
 
     let (player_one, player_two) = &players;
-    let mut wins = [0, 0];
 
     // Possible player one dice rolls
-    for (roll, freq) in ROLLS {
-        let mut player_one = *player_one;
+    ROLLS
+        .par_iter()
+        .map(|(roll, freq)| {
+            let mut wins = [0, 0];
+            let mut player_one = *player_one;
 
-        if player_one.advance(roll).is_won() {
-            wins[0] += freq;
-            continue;
-        }
-
-        // Possible player two dice rolls
-        for (roll, second_freq) in ROLLS {
-            let mut player_two = *player_two;
-            let freq = freq * second_freq;
-
-            if player_two.advance(roll).is_won() {
-                wins[1] += freq;
-                continue;
+            if player_one.advance(*roll).is_won() {
+                wins[0] += freq;
+                return wins;
             }
 
-            // Recurse over remaining possibilities
-            let further_wins = quantum_game((player_one, player_two));
-            wins = [
-                wins[0] + further_wins[0] * freq,
-                wins[1] + further_wins[1] * freq,
-            ];
-        }
-    }
+            // Possible player two dice rolls
+            for (roll, second_freq) in ROLLS {
+                let mut player_two = *player_two;
+                let freq = freq * second_freq;
 
-    wins
+                if player_two.advance(roll).is_won() {
+                    wins[1] += freq;
+                    return wins;
+                }
+
+                // Recurse over remaining possibilities
+                let further_wins = quantum_game((player_one, player_two));
+                wins = [
+                    wins[0] + further_wins[0] * freq,
+                    wins[1] + further_wins[1] * freq,
+                ];
+            }
+            wins
+        })
+        .reduce(|| [0, 0], |a, b| [a[0] + b[0], a[1] + b[1]])
 }
 
 pub fn part_two(input: &'static str) -> usize {

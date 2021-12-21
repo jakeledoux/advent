@@ -1,6 +1,7 @@
 use std::{collections::HashMap, ops::RangeInclusive};
 
 use itertools::{Itertools, MinMaxResult};
+use rayon::prelude::*;
 
 type Algorithm = Vec<Cell>;
 type SpatialCell = (Pos, Cell);
@@ -184,6 +185,7 @@ impl Image {
     pub fn step(&mut self, algo: &Algorithm) {
         self.cells = self
             .indices()
+            .par_bridge()
             .filter_map(|pos| {
                 let cell_value = self.get_cell_value(pos);
                 let new_cell = algo[cell_value];

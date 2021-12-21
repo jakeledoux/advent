@@ -2,6 +2,7 @@ use std::collections::{HashMap, HashSet};
 
 use euclid::{vec3, Angle, Rotation3D, UnknownUnit, Vector3D};
 use itertools::Itertools;
+use rayon::prelude::*;
 
 type Point = Vector3D<i64, UnknownUnit>;
 type Rotation = (usize, usize);
@@ -40,7 +41,7 @@ fn find_overlap(
     unknown: &[Point],
     threshold: usize,
 ) -> Option<(Point, Vec<Point>)> {
-    for rotation in get_rotations() {
+    get_rotations().into_par_iter().find_map_any(|rotation| {
         let rotated_unknown = unknown
             .iter()
             .map(|point| rotate(point, rotation))
@@ -52,8 +53,8 @@ fn find_overlap(
             .counts();
 
         if let Some(offset) = offsets
-            .into_iter()
-            .find_map(|(offset, count)| (count >= threshold).then(|| offset))
+            .into_par_iter()
+            .find_map_any(|(offset, count)| (count >= threshold).then(|| offset))
         {
             return Some((
                 offset,
@@ -62,9 +63,10 @@ fn find_overlap(
                     .map(|point| point - offset)
                     .collect(),
             ));
+        } else {
+            None
         }
-    }
-    None
+    })
 }
 
 fn align_scanners(scanners: &[Scanner]) -> Option<(Vec<Point>, Vec<Point>)> {
@@ -74,28 +76,30 @@ fn align_scanners(scanners: &[Scanner]) -> Option<(Vec<Point>, Vec<Point>)> {
     let mut scanner_positions: Vec<Point> = vec![vec3(0, 0, 0)];
 
     while !scanners.is_empty() {
-        println!("{} left...", scanners.len());
-        let mut new_scanners = Vec::new();
         let prev_length = scanners.len();
-        for unknown_scanner in scanners {
-            if let Some((offset, corrected_points)) =
-                find_overlap(&beacons, &unknown_scanner.points, 12)
-            {
-                beacons.extend(corrected_points);
-                beacons = beacons
-                    .into_iter()
-                    .collect::<HashSet<Point>>()
-                    .into_iter()
-                    .collect_vec();
-                scanner_positions.push(offset);
-            } else {
-                new_scanners.push(unknown_scanner);
-            }
+        let overlaps: Vec<_> = scanners
+            .iter()
+            .enumerate()
+            .par_bridge()
+            .filter_map(|(idx, unknown_scanner)| {
+                find_overlap(&beacons, &unknown_scanner.points, 12).map(|result| (idx, result))
+            })
+            .collect();
+        for (idx, (offset, corrected_points)) in
+            overlaps.into_iter().sorted_by_key(|(i, _)| *i).rev()
+        {
+            beacons.extend(corrected_points);
+            beacons = beacons
+                .into_iter()
+                .collect::<HashSet<Point>>()
+                .into_iter()
+                .collect_vec();
+            scanner_positions.push(offset);
+            scanners.remove(idx);
         }
-        if prev_length == new_scanners.len() {
+        if prev_length == scanners.len() {
             return None;
         }
-        scanners = new_scanners;
     }
 
     Some((scanner_positions, beacons))
