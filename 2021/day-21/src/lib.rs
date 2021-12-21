@@ -84,9 +84,7 @@ pub fn part_one(input: &'static str) -> usize {
 pub fn quantum_game(players: (Player, Player)) -> [usize; 2] {
     const ROLLS: [(usize, usize); 7] = [(3, 1), (4, 3), (5, 6), (6, 7), (7, 6), (8, 3), (9, 1)];
 
-    let player_one = &players.0;
-    let player_two = &players.1;
-
+    let (player_one, player_two) = &players;
     let mut wins = [0, 0];
 
     // Possible player one dice rolls
@@ -99,18 +97,21 @@ pub fn quantum_game(players: (Player, Player)) -> [usize; 2] {
         }
 
         // Possible player two dice rolls
-        for (roll, freq2) in ROLLS {
+        for (roll, second_freq) in ROLLS {
             let mut player_two = *player_two;
+            let freq = freq * second_freq;
 
             if player_two.advance(roll).is_won() {
-                wins[1] += freq2 * freq;
+                wins[1] += freq;
                 continue;
             }
 
             // Recurse over remaining possibilities
             let further_wins = quantum_game((player_one, player_two));
-            wins[0] += further_wins[0] * freq2 * freq;
-            wins[1] += further_wins[1] * freq2 * freq;
+            wins = [
+                wins[0] + further_wins[0] * freq,
+                wins[1] + further_wins[1] * freq,
+            ];
         }
     }
 
