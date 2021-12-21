@@ -106,7 +106,7 @@ pub fn quantum_game(players: (Player, Player)) -> [usize; 2] {
 
                 if player_two.advance(roll).is_won() {
                     wins[1] += freq;
-                    return wins;
+                    continue;
                 }
 
                 // Recurse over remaining possibilities
