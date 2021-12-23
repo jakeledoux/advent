@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use cached::proc_macro::cached;
 
 const ADDITIONAL_ROWS: [(Amphipod, Amphipod); 4] = [
@@ -274,26 +276,45 @@ pub fn burrow_moves(burrow: Burrow) -> Vec<(Burrow, usize)> {
     burrow.moves()
 }
 
-#[cached]
-pub fn all_solutions(burrow: Burrow, energy_spent: usize) -> Vec<usize> {
-    burrow_moves(burrow)
-        .iter()
-        .flat_map(|&(burrow, additional_energy)| {
-            if burrow.is_finished() {
-                vec![energy_spent + additional_energy]
-            } else {
-                all_solutions(burrow, energy_spent + additional_energy)
+pub fn cheapest_solution(burrow: Burrow) -> Option<usize> {
+    let initial_state = burrow;
+
+    let mut total_energy: HashMap<Burrow, usize> = HashMap::new();
+    total_energy.insert(initial_state, 0);
+    let mut best_parent: HashMap<Burrow, Burrow> = HashMap::new();
+    let mut queue: Vec<Burrow> = vec![initial_state];
+
+    while !queue.is_empty() {
+        // Get most promising elem from queue
+        let new_state = queue.pop().unwrap();
+
+        // Found target
+        if new_state.is_finished() {
+            return Some(total_energy[&new_state]);
+        }
+
+        for (child_state, child_energy) in burrow_moves(new_state) {
+            // Check if this path to `neighbor` is less dangerest than previous best
+            let alt_total_energy = total_energy[&new_state] + child_energy;
+            if alt_total_energy < *total_energy.get(&child_state).unwrap_or(&usize::MAX) {
+                // Update best path
+                total_energy.insert(child_state, alt_total_energy);
+                best_parent.insert(child_state, new_state);
+
+                // Queue neighbor for expansion (insert pre-sorted)
+                let idx = queue
+                    .binary_search_by(|other| alt_total_energy.cmp(&total_energy[other]))
+                    .unwrap_or_else(|i| i);
+                queue.insert(idx, child_state);
             }
-        })
-        .collect()
+        }
+    }
+    None
 }
 
 pub fn part_one(input: &'static str) -> usize {
     let burrow = parse_input(input, 2);
-    // dbg!(burrow);
-    // 0
-    let solutions = all_solutions(burrow, 0);
-    solutions.into_iter().min().unwrap()
+    cheapest_solution(burrow).unwrap()
 }
 
 pub fn part_two(input: &'static str) -> usize {
@@ -304,8 +325,7 @@ pub fn part_two(input: &'static str) -> usize {
         room.stack[1] = Some(ADDITIONAL_ROWS[i].0);
         room.stack[2] = Some(ADDITIONAL_ROWS[i].1);
     }
-    let solutions = all_solutions(burrow, 0);
-    solutions.into_iter().min().unwrap()
+    cheapest_solution(burrow).unwrap()
 }
 
 fn parse_input(input: &'static str, capacity: usize) -> Burrow {
