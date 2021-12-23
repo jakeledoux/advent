@@ -8,7 +8,6 @@ authors = ["Jake Ledoux <contactjakeledoux@gmail.com>"]
 
 [dependencies]
 cached = "0.26.2"
-rayon = "1.5.1"
 regex = "1.5.4"
 
 [lib]
@@ -17,3 +16,5 @@ doctest = false
 [[bin]]
 name = "aoc-2021-day-23"
 test = false
+
+[features]

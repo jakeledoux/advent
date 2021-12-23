@@ -101,46 +101,56 @@ impl Burrow {
     }
 
     pub fn moves(&self) -> Vec<(Self, usize)> {
-        let mut moves = Vec::new();
-
         // Hallway -> Room moves
-        for (pos, amphipod) in self.hallway.amphipod_locations() {
-            let room_index = amphipod.room_index();
+        let mut moves: Vec<_> = self
+            .hallway
+            .amphipod_locations()
+            .into_iter()
+            .filter_map(|(pos, amphipod)| {
+                let room_index = amphipod.room_index();
 
-            if self.rooms[room_index].can_enter(amphipod) {
-                let door_pos = (room_index + 1) * 2;
-                if self.hallway.can_travel(pos, door_pos) {
-                    moves.push({
+                if self.rooms[room_index].can_enter(amphipod) {
+                    let door_pos = (room_index + 1) * 2;
+                    if self.hallway.can_travel(pos, door_pos) {
                         let mut burrow = *self;
                         let mut energy_spent = burrow.hallway.move_out(pos, door_pos).unwrap();
                         energy_spent += burrow.rooms[room_index].push(amphipod).unwrap();
                         energy_spent *= amphipod.energy();
-                        (burrow, energy_spent)
-                    });
+                        return Some((burrow, energy_spent));
+                    }
                 }
-            }
-        }
+                None
+            })
+            .collect();
 
-        // Room -> Hallway moves
-        for (room_index, _room) in self
-            .rooms
-            .iter()
-            .enumerate()
-            .filter(|(_i, room)| !room.is_complete() && !room.is_empty())
-        {
-            let door_pos = (room_index + 1) * 2;
-            // Iterate over valid resting places
-            for pos in (0..11).filter(|&n| n % 2 == 1 || n == 0 || n == 10) {
-                if self.hallway.can_travel(door_pos, pos) {
-                    moves.push({
-                        let mut burrow = *self;
-                        let (amphipod, mut energy_spent) = burrow.rooms[room_index].pop().unwrap();
-                        energy_spent += burrow.hallway.move_in(door_pos, pos, amphipod).unwrap();
-                        energy_spent *= amphipod.energy();
-                        (burrow, energy_spent)
-                    });
-                }
-            }
+        // Skip if any amphipods can be moved into their final room
+        if moves.is_empty() {
+            // Room -> Hallway moves
+            moves.extend(
+                self.rooms
+                    .iter()
+                    .enumerate()
+                    .filter(|(_i, room)| !room.is_complete() && !room.is_empty())
+                    .flat_map(|(room_index, _room)| {
+                        let door_pos = (room_index + 1) * 2;
+                        // Iterate over valid resting places
+                        (0..11)
+                            .filter(|&n| n % 2 == 1 || n == 0 || n == 10)
+                            .filter_map(move |pos| {
+                                if self.hallway.can_travel(door_pos, pos) {
+                                    let mut burrow = *self;
+                                    let (amphipod, mut energy_spent) =
+                                        burrow.rooms[room_index].pop().unwrap();
+                                    energy_spent +=
+                                        burrow.hallway.move_in(door_pos, pos, amphipod).unwrap();
+                                    energy_spent *= amphipod.energy();
+                                    Some((burrow, energy_spent))
+                                } else {
+                                    None
+                                }
+                            })
+                    }),
+            );
         }
 
         moves
@@ -240,22 +250,20 @@ impl Hallway {
     }
 
     pub fn move_in(&mut self, from: usize, to: usize, amphipod: Amphipod) -> Option<usize> {
-        if self.can_travel(from, to) {
-            if self.spaces[to].is_none() {
-                self.spaces[to] = Some(amphipod);
-                return Some((from as isize - to as isize).abs() as usize);
-            }
+        if self.can_travel(from, to) && self.spaces[to].is_none() {
+            self.spaces[to] = Some(amphipod);
+            Some((from as isize - to as isize).abs() as usize)
+        } else {
+            None
         }
-        None
     }
 
     pub fn move_out(&mut self, from: usize, to: usize) -> Option<usize> {
-        if self.can_travel(from, to) {
-            if self.spaces[from].take().is_some() {
-                return Some((from as isize - to as isize).abs() as usize);
-            }
+        if self.can_travel(from, to) && self.spaces[from].take().is_some() {
+            Some((from as isize - to as isize).abs() as usize)
+        } else {
+            None
         }
-        None
     }
 
     pub fn amphipod_locations(&self) -> Vec<(usize, Amphipod)> {
