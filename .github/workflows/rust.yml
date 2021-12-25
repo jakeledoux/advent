@@ -24,3 +24,11 @@ jobs:
       run: |
         cd 2021
         cargo test --verbose
+    - name: Build (2019)
+      run: |
+        cd 2019
+        cargo build --verbose
+    - name: Run tests (2019)
+      run: |
+        cd 2019
+        cargo test --verbose
