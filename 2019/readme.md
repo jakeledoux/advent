@@ -1,7 +1,7 @@
 # Advent of Code 2019
 
-![](https://img.shields.io/badge/days%20completed-2-darkgreen)
-![](https://img.shields.io/badge/stars%20⭐-4-yellow)
+![](https://img.shields.io/badge/days%20completed-3-darkgreen)
+![](https://img.shields.io/badge/stars%20⭐-6-yellow)
 
 The date is 2021-12-25, and as this year's event comes to a close I embark on a
 new journey... to complete Advent of Code 2019. *(mainly because intcode sounds
