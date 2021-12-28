@@ -3,7 +3,6 @@ use lib::{part_one, part_two};
 pub mod lib;
 
 const INPUT: &str = include_str!("../input.txt");
-// const INPUT: &str = include_str!("../sample.txt");
 
 fn main() {
     println!("Part one: {}", part_one(INPUT));
