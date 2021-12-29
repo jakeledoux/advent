@@ -1,7 +1,7 @@
 # Advent of Code 🎄
 
-![](https://img.shields.io/badge/days%20completed-30-darkgreen)
-![](https://img.shields.io/badge/stars%20⭐-60-yellow)
+![](https://img.shields.io/badge/days%20completed-31-darkgreen)
+![](https://img.shields.io/badge/stars%20⭐-62-yellow)
 
 A repo to keep track of my [Advent of Code](https://adventofcode.com) solutions.
 
