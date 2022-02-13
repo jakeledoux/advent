@@ -1,0 +1,14 @@
+[package]
+name = "aoc-2015-day-03"
+version = "0.1.0"
+edition = "2021"
+authors = ["Jake Ledoux <contactjakeledoux@gmail.com>"]
+
+[lib]
+doctest = false
+
+[[bin]]
+name = "aoc-2015-day-03"
+test = false
+
+[features]
