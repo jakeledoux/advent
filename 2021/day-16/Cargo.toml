@@ -13,6 +13,7 @@ thiserror = "1.0.30"
 
 [lib]
 doctest = false
+test = false
 
 [[bin]]
 name = "aoc-2021-day-16"
