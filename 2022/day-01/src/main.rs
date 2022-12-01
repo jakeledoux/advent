@@ -1,3 +1,4 @@
+#![allow(special_module_name)]
 use lib::{part_one, part_two};
 
 pub mod lib;

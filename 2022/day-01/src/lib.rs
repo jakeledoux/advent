@@ -1,32 +1,32 @@
+use itertools::Itertools;
+
+fn map_sum(i: impl IntoIterator<Item = Vec<u32>>) -> impl Iterator<Item = u32> {
+    i.into_iter().map(|v| v.into_iter().sum())
+}
+
 pub fn part_one(input: &'static str) -> u32 {
     let input = parse_input(input);
-    input.iter().map(|elf| elf.iter().sum()).max().unwrap()
+    map_sum(input).max().unwrap()
 }
 
 pub fn part_two(input: &'static str) -> u32 {
     let input = parse_input(input);
-    let mut totals: Vec<u32> = input.iter().map(|elf| elf.iter().sum()).collect();
-    totals.sort();
-    totals.reverse();
-    totals.iter().take(3).sum()
+    map_sum(input).sorted().rev().take(3).sum()
 }
 
 fn parse_input(input: &'static str) -> Vec<Vec<u32>> {
-    let mut elves = Vec::new();
-    let mut snacks = Vec::new();
-    for line in input.lines() {
-        if line.trim() == "" {
-            elves.push(snacks);
-            snacks = Vec::new();
-            continue;
+    input.lines().fold(vec![vec![]], |mut acc, mut s| {
+        s = s.trim();
+        if s.is_empty() {
+            acc.push(vec![])
+        } else if let Ok(calories) = s.parse() {
+            acc.last_mut()
+                .expect(r#"AOC input is of type: `"" | number`"#)
+                .push(calories);
         }
-        if let Ok(calories) = line.trim().parse() {
-            snacks.push(calories);
-        }
-    }
-    elves.push(snacks);
 
-    elves
+        acc
+    })
 }
 
 #[cfg(test)]
