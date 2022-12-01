@@ -15,18 +15,14 @@ pub fn part_two(input: &'static str) -> u32 {
 }
 
 fn parse_input(input: &'static str) -> Vec<Vec<u32>> {
-    input.lines().fold(vec![vec![]], |mut acc, mut s| {
-        s = s.trim();
-        if s.is_empty() {
-            acc.push(vec![])
-        } else if let Ok(calories) = s.parse() {
-            acc.last_mut()
-                .expect(r#"AOC input is of type: `"" | number`"#)
-                .push(calories);
-        }
-
-        acc
-    })
+    input
+        .split("\n\n")
+        .map(|elf| {
+            elf.lines()
+                .map(|s| s.parse().expect(r#"AOC input is of type: `"" | number`"#))
+                .collect()
+        })
+        .collect()
 }
 
 #[cfg(test)]
