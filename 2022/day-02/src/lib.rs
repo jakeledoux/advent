@@ -1,6 +1,6 @@
 use strum_macros::EnumString;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumString)]
+#[derive(PartialEq, Eq, EnumString)]
 enum Move {
     #[strum(serialize = "A", serialize = "X")]
     Rock,
@@ -30,7 +30,7 @@ impl Move {
     }
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, EnumString)]
+#[derive(PartialEq, Eq, EnumString)]
 enum Outcome {
     #[strum(serialize = "X")]
     Lose,
