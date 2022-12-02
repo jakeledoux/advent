@@ -1,50 +1,25 @@
-use strum_macros::EnumString;
-
-#[derive(Clone, Copy, PartialEq, Eq, EnumString)]
-enum Move {
-    #[strum(serialize = "A", serialize = "X")]
-    Rock,
-    #[strum(serialize = "B", serialize = "Y")]
-    Paper,
-    #[strum(serialize = "C", serialize = "Z")]
-    Scissors,
-}
-
-impl Move {
-    fn from_index(index: usize) -> Self {
-        [Move::Rock, Move::Paper, Move::Scissors][index % 3]
-    }
-
-    fn index(&self) -> usize {
-        match self {
-            Move::Rock => 0,
-            Move::Paper => 1,
-            Move::Scissors => 2,
-        }
-    }
-
-    fn compare(&self, other: &Self) -> Outcome {
-        if self == other {
-            Outcome::Draw
-        } else if self.index() == (other.index() + 1) % 3 {
-            Outcome::Win
-        } else {
-            Outcome::Lose
-        }
+fn compare(a: usize, b: usize) -> Outcome {
+    if a == b {
+        Outcome::Draw
+    } else if a == (b + 1) % 3 {
+        Outcome::Win
+    } else {
+        Outcome::Lose
     }
 }
 
-#[derive(PartialEq, Eq, EnumString)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 enum Outcome {
-    #[strum(serialize = "X")]
     Lose,
-    #[strum(serialize = "Y")]
     Draw,
-    #[strum(serialize = "Z")]
     Win,
 }
 
 impl Outcome {
+    fn from_index(index: usize) -> Self {
+        [Self::Lose, Self::Draw, Self::Win][index]
+    }
+
     fn points(&self) -> usize {
         match self {
             Outcome::Win => 6,
@@ -53,12 +28,12 @@ impl Outcome {
         }
     }
 
-    fn rig(&self, other: &Move) -> Move {
-        Move::from_index(match self {
-            Outcome::Lose => other.index() + 2,
-            Outcome::Draw => return *other,
-            Outcome::Win => other.index() + 1,
-        })
+    fn rig(&self, other: usize) -> usize {
+        match self {
+            Outcome::Lose => (other + 2) % 3,
+            Outcome::Draw => other,
+            Outcome::Win => (other + 1) % 3,
+        }
     }
 }
 
@@ -66,9 +41,9 @@ pub fn part_one(input: &'static str) -> usize {
     let input = parse_input(input);
     input
         .iter()
-        .map(|(other, (me, _outcome))| {
-            let outcome = me.compare(other);
-            me.index() + 1 + outcome.points()
+        .map(|(other, me)| {
+            let outcome = compare(*me, *other);
+            me + 1 + outcome.points()
         })
         .sum()
 }
@@ -77,19 +52,26 @@ pub fn part_two(input: &'static str) -> usize {
     let input = parse_input(input);
     input
         .iter()
-        .map(|(other, (_me, outcome))| {
-            let me = outcome.rig(other);
-            me.index() + 1 + outcome.points()
+        .map(|(other, outcome)| {
+            let outcome = Outcome::from_index(*outcome);
+            let me = outcome.rig(*other);
+            me + 1 + outcome.points()
         })
         .sum()
 }
 
-fn parse_input(input: &'static str) -> Vec<(Move, (Move, Outcome))> {
+fn parse_input(input: &'static str) -> Vec<(usize, usize)> {
+    let parse = |s| match s {
+        "A" | "X" => 0,
+        "B" | "Y" => 1,
+        "C" | "Z" => 2,
+        _ => panic!("invalid input"),
+    };
     input
         .lines()
         .map(|s| {
             let (a, b) = s.split_once(' ').unwrap();
-            (a.parse().unwrap(), (b.parse().unwrap(), b.parse().unwrap()))
+            (parse(a), parse(b))
         })
         .collect()
 }
