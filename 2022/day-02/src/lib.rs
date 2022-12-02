@@ -1,49 +1,16 @@
-fn compare(a: usize, b: usize) -> Outcome {
-    if a == b {
-        Outcome::Draw
-    } else if a == (b + 1) % 3 {
-        Outcome::Win
-    } else {
-        Outcome::Lose
-    }
-}
-
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
-enum Outcome {
-    Lose,
-    Draw,
-    Win,
-}
-
-impl Outcome {
-    fn from_index(index: usize) -> Self {
-        [Self::Lose, Self::Draw, Self::Win][index]
-    }
-
-    fn points(&self) -> usize {
-        match self {
-            Outcome::Win => 6,
-            Outcome::Lose => 0,
-            Outcome::Draw => 3,
-        }
-    }
-
-    fn rig(&self, other: usize) -> usize {
-        match self {
-            Outcome::Lose => (other + 2) % 3,
-            Outcome::Draw => other,
-            Outcome::Win => (other + 1) % 3,
-        }
-    }
-}
-
 pub fn part_one(input: &'static str) -> usize {
     let input = parse_input(input);
     input
         .iter()
         .map(|(other, me)| {
-            let outcome = compare(*me, *other);
-            me + 1 + outcome.points()
+            me + 1
+                + if me == other {
+                    3
+                } else if *me == (other + 1) % 3 {
+                    6
+                } else {
+                    0
+                }
         })
         .sum()
 }
@@ -52,11 +19,7 @@ pub fn part_two(input: &'static str) -> usize {
     let input = parse_input(input);
     input
         .iter()
-        .map(|(other, outcome)| {
-            let outcome = Outcome::from_index(*outcome);
-            let me = outcome.rig(*other);
-            me + 1 + outcome.points()
-        })
+        .map(|(other, outcome)| ((other + [2, 0, 1][*outcome]) % 3) + 1 + (outcome * 3))
         .sum()
 }
 
