@@ -1,27 +1,43 @@
-use std::str::FromStr;
+use strum_macros::EnumString;
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, EnumString)]
 enum Move {
+    #[strum(serialize = "A", serialize = "X")]
     Rock,
+    #[strum(serialize = "B", serialize = "Y")]
     Paper,
+    #[strum(serialize = "C", serialize = "Z")]
     Scissors,
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
-enum Outcome {
-    Win,
-    Lose,
-    Draw,
-}
-
-impl From<Move> for Outcome {
-    fn from(m: Move) -> Self {
-        match m {
-            Move::Rock => Outcome::Lose,
-            Move::Paper => Outcome::Draw,
-            Move::Scissors => Outcome::Win,
+impl Move {
+    fn index(&self) -> usize {
+        match self {
+            Move::Rock => 0,
+            Move::Paper => 1,
+            Move::Scissors => 2,
         }
     }
+
+    fn compare(&self, other: &Self) -> Outcome {
+        if self == other {
+            Outcome::Draw
+        } else if self.index() == (other.index() + 1) % 3 {
+            Outcome::Win
+        } else {
+            Outcome::Lose
+        }
+    }
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, EnumString)]
+enum Outcome {
+    #[strum(serialize = "X")]
+    Lose,
+    #[strum(serialize = "Y")]
+    Draw,
+    #[strum(serialize = "Z")]
+    Win,
 }
 
 impl Outcome {
@@ -41,52 +57,13 @@ impl Outcome {
     }
 }
 
-impl FromStr for Move {
-    type Err = ();
-
-    fn from_str(s: &str) -> Result<Self, Self::Err> {
-        match s {
-            "A" | "X" => Ok(Self::Rock),
-            "B" | "Y" => Ok(Self::Paper),
-            "C" | "Z" => Ok(Self::Scissors),
-            _ => Err(()),
-        }
-    }
-}
-
-impl Move {
-    fn index(&self) -> usize {
-        match self {
-            Move::Rock => 0,
-            Move::Paper => 1,
-            Move::Scissors => 2,
-        }
-    }
-
-    fn compare(&self, other: &Self) -> Outcome {
-        if self == other {
-            return Outcome::Draw;
-        }
-        let self_beats = match self {
-            Move::Rock => 2,
-            Move::Paper => 0,
-            Move::Scissors => 1,
-        };
-        if self_beats == other.index() {
-            Outcome::Win
-        } else {
-            Outcome::Lose
-        }
-    }
-}
-
 pub fn part_one(input: &'static str) -> usize {
     let input = parse_input(input);
     input
         .iter()
-        .map(|(other, me)| {
+        .map(|(other, (me, _outcome))| {
             let outcome = me.compare(other);
-            return me.index() + 1 + outcome.points();
+            me.index() + 1 + outcome.points()
         })
         .sum()
 }
@@ -95,24 +72,19 @@ pub fn part_two(input: &'static str) -> usize {
     let input = parse_input(input);
     input
         .iter()
-        .map(|(other, me)| {
-            let outcome: Outcome = (*me).into();
+        .map(|(other, (_me, outcome))| {
             let me = outcome.rig(other);
-            return me.index() + 1 + outcome.points();
+            me.index() + 1 + outcome.points()
         })
         .sum()
 }
 
-fn parse_input(input: &'static str) -> Vec<(Move, Move)> {
+fn parse_input(input: &'static str) -> Vec<(Move, (Move, Outcome))> {
     input
         .lines()
-        .filter_map(|s| match s.trim() {
-            "" => None,
-            _ => Some(s.trim()),
-        })
         .map(|s| {
-            let (a, b) = s.split_once(" ").unwrap();
-            (a.parse().unwrap(), b.parse().unwrap())
+            let (a, b) = s.split_once(' ').unwrap();
+            (a.parse().unwrap(), (b.parse().unwrap(), b.parse().unwrap()))
         })
         .collect()
 }

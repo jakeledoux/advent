@@ -7,6 +7,8 @@ authors = ["Jake Ledoux <contactjakeledoux@gmail.com>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+strum = "0.24.1"
+strum_macros = "0.24.3"
 
 [lib]
 doctest = false
