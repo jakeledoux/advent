@@ -1,6 +1,9 @@
 use itertools::Itertools;
+use smallvec::SmallVec;
 
-fn map_sum(i: impl IntoIterator<Item = Vec<u32>>) -> impl Iterator<Item = u32> {
+fn map_sum(
+    i: impl IntoIterator<Item = impl IntoIterator<Item = u32>>,
+) -> impl Iterator<Item = u32> {
     i.into_iter().map(|v| v.into_iter().sum())
 }
 
@@ -14,7 +17,7 @@ pub fn part_two(input: &'static str) -> u32 {
     map_sum(input).sorted().rev().take(3).sum()
 }
 
-fn parse_input(input: &'static str) -> Vec<Vec<u32>> {
+fn parse_input(input: &'static str) -> Vec<SmallVec<[u32; 32]>> {
     input
         .split("\n\n")
         .map(|elf| {

@@ -8,6 +8,7 @@ authors = ["Jake Ledoux <contactjakeledoux@gmail.com>"]
 
 [dependencies]
 itertools = "0.10.5"
+smallvec = "1.10.0"
 
 [lib]
 doctest = false
