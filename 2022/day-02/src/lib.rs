@@ -1,6 +1,6 @@
 use strum_macros::EnumString;
 
-#[derive(PartialEq, Eq, EnumString)]
+#[derive(Clone, Copy, PartialEq, Eq, EnumString)]
 enum Move {
     #[strum(serialize = "A", serialize = "X")]
     Rock,
@@ -11,6 +11,10 @@ enum Move {
 }
 
 impl Move {
+    fn from_index(index: usize) -> Self {
+        [Move::Rock, Move::Paper, Move::Scissors][index % 3]
+    }
+
     fn index(&self) -> usize {
         match self {
             Move::Rock => 0,
@@ -50,10 +54,11 @@ impl Outcome {
     }
 
     fn rig(&self, other: &Move) -> Move {
-        [Move::Rock, Move::Paper, Move::Scissors]
-            .into_iter()
-            .find(|m| m.compare(other) == *self)
-            .expect("all moves checked, cannot fail")
+        Move::from_index(match self {
+            Outcome::Lose => other.index() + 2,
+            Outcome::Draw => return *other,
+            Outcome::Win => other.index() + 1,
+        })
     }
 }
 
