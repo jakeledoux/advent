@@ -53,7 +53,7 @@ impl Outcome {
         [Move::Rock, Move::Paper, Move::Scissors]
             .into_iter()
             .find(|m| m.compare(other) == *self)
-            .unwrap()
+            .expect("all moves checked, cannot fail")
     }
 }
 
