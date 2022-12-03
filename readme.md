@@ -1,8 +1,5 @@
 # Advent of Code 🎄
 
-![](https://img.shields.io/badge/days%20completed-34-darkgreen)
-![](https://img.shields.io/badge/stars%20⭐-68-yellow)
-
 A repo to keep track of my [Advent of Code](https://adventofcode.com) solutions.
 
 ## Directory structure
