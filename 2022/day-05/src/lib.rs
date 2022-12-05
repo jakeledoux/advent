@@ -1,36 +1,23 @@
 use itertools::Itertools;
 
+const EXPECT_AOC: &str = "Advent of Code input will never be malformed";
+
+type Unit = char;
+
 #[derive(Debug, Default)]
 pub struct Supplies {
     stacks: [Vec<Unit>; 9],
 }
 
 impl Supplies {
-    pub fn push(&mut self, stack: usize, unit: Unit) {
-        self.stacks[stack].push(unit)
-    }
-
-    pub fn pop(&mut self, stack: usize) -> Option<Unit> {
-        self.stacks[stack].pop()
-    }
-
-    pub fn transfer(&mut self, from_stack: usize, to_stack: usize) {
-        if let Some(unit) = self.pop(from_stack) {
-            self.push(to_stack, unit);
+    pub fn transfer(&mut self, count: usize, from_stack: usize, to_stack: usize, method: Method) {
+        let mut buffer: Vec<_> = (0..count)
+            .map(|_| self.stacks[from_stack].pop().expect(EXPECT_AOC))
+            .collect();
+        if matches!(method, Method::Group) {
+            buffer.reverse();
         }
-    }
-
-    pub fn bulk_transfer(&mut self, count: usize, from_stack: usize, to_stack: usize) {
-        let mut temp_stack = Vec::new();
-        for _ in 0..count {
-            if let Some(unit) = self.pop(from_stack) {
-                temp_stack.push(unit);
-            }
-        }
-
-        for unit in temp_stack.into_iter().rev() {
-            self.push(to_stack, unit);
-        }
+        self.stacks[to_stack].append(&mut buffer);
     }
 
     pub fn skim(&self) -> String {
@@ -41,14 +28,15 @@ impl Supplies {
     }
 }
 
-type Unit = char;
+pub enum Method {
+    Single,
+    Group,
+}
 
 pub fn part_one(input: &'static str) -> String {
     let (mut supplies, instructions) = parse_input(input);
     for (count, from, to) in instructions {
-        for _ in 0..count {
-            supplies.transfer(from - 1, to - 1);
-        }
+        supplies.transfer(count, from - 1, to - 1, Method::Single);
     }
     supplies.skim()
 }
@@ -56,34 +44,36 @@ pub fn part_one(input: &'static str) -> String {
 pub fn part_two(input: &'static str) -> String {
     let (mut supplies, instructions) = parse_input(input);
     for (count, from, to) in instructions {
-        supplies.bulk_transfer(count, from - 1, to - 1);
+        supplies.transfer(count, from - 1, to - 1, Method::Group);
     }
     supplies.skim()
 }
 
 fn parse_input(input: &'static str) -> (Supplies, Vec<(usize, usize, usize)>) {
-    let (state, instructions) = input.split_once("\n\n").unwrap();
-    let state = state.lines().rev().skip(1);
+    let (state, instructions) = input.split_once("\n\n").expect(EXPECT_AOC);
     let mut supplies = Supplies::default();
-    state.for_each(|line| {
+
+    // find all crates and push them into their stacks
+    state.lines().rev().skip(1).for_each(|line| {
         line.chars()
             .enumerate()
             .filter(|(_i, c)| c.is_alphabetic())
-            .for_each(|(i, c)| supplies.push(i / 4, c));
+            .for_each(|(i, c)| supplies.stacks[i / 4].push(c));
     });
 
-    (
-        supplies,
-        instructions
-            .lines()
-            .map(|s| {
-                s.split(' ')
-                    .filter_map(|s| s.parse().ok())
-                    .collect_tuple()
-                    .unwrap()
-            })
-            .collect(),
-    )
+    // filter to words that parse into ints and collect those into one tuple per line
+    // "move 2 from 1 to 3" -> (3, 1, 3)
+    let instructions = instructions
+        .lines()
+        .map(|s| {
+            s.split(' ')
+                .filter_map(|s| s.parse().ok())
+                .collect_tuple()
+                .expect(EXPECT_AOC)
+        })
+        .collect();
+
+    (supplies, instructions)
 }
 
 #[cfg(test)]
