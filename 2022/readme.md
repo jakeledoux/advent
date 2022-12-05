@@ -1,7 +1,7 @@
 # Advent of Code 2022
 
-![](https://img.shields.io/badge/days%20completed-3-darkgreen)
-![](https://img.shields.io/badge/stars%20⭐-6-yellow)
+![](https://img.shields.io/badge/days%20completed-5-darkgreen)
+![](https://img.shields.io/badge/stars%20⭐-10-yellow)
 
 Back for year two! I'm sticking with Rust because it was a lot of fun last time
 and I don't get a lot of opportunities to write it these days. Maybe TypeScript
