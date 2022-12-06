@@ -11,4 +11,4 @@ programs with it.
 
 This directory is set up as a Cargo workspace. You can test all solutions
 against the sample data by running `cargo test`, and calculate the solutions to
-my unique input with `cargo run --release`.
+the input in `input.txt` with `cargo run --release`.
