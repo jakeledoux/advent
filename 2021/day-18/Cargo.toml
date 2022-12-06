@@ -8,3 +8,7 @@ edition = "2021"
 [dependencies]
 itertools = "0.10.3"
 thiserror = "1.0.30"
+
+[[bin]]
+name = "aoc-2021-day-18"
+test = false
