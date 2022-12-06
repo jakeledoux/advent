@@ -2,6 +2,11 @@
 
 A repo to keep track of my [Advent of Code](https://adventofcode.com) solutions.
 
+## Completed Years
+
+- [2022](2022/) _(in-progress)_
+- [2021](2021/)
+
 ## Directory structure
 
 ```
