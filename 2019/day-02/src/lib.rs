@@ -264,20 +264,3 @@ pub fn part_two(input: &'static str) -> usize {
     }
     panic!("Failed");
 }
-
-#[cfg(test)]
-mod tests {
-    use crate::{part_one, part_two};
-
-    const INPUT: &str = include_str!("../input.txt");
-
-    #[test]
-    fn test_part_one() {
-        assert_eq!(part_one(INPUT), 3790689);
-    }
-
-    #[test]
-    fn test_part_two() {
-        assert_eq!(part_two(INPUT), 6533);
-    }
-}
