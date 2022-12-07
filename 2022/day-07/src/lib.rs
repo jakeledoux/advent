@@ -43,7 +43,7 @@ impl<'a> TryFrom<&'a str> for Command<'a> {
 
     fn try_from(s: &'a str) -> Result<Self, Self::Error> {
         let mut lines = s.lines().map(|line| line.split(' ').collect::<Vec<_>>());
-        let mut command = match lines.next().ok_or(anyhow!("empty command"))?[..] {
+        let mut command = match lines.next().ok_or_else(|| anyhow!("empty command"))?[..] {
             ["cd", rel_path] => Command::Cd { rel_path },
             ["ls"] => Command::Ls { items: Vec::new() },
             ref p => return Err(anyhow!("invalid command pattern: {:#?}", p)),
@@ -63,34 +63,40 @@ type Filesystem<'a> = HashMap<PathBuf, Vec<Item<'a>>>;
 type Sizes = HashMap<PathBuf, usize>;
 
 fn build_filesystem(commands: Vec<Command>) -> Filesystem {
-    let mut cwd = PathBuf::new();
-    let mut filesystem: Filesystem = HashMap::new();
-    for command in commands {
-        match command {
-            Command::Cd { rel_path } => {
-                if rel_path == ".." {
-                    cwd.pop();
-                } else {
-                    cwd.push(rel_path);
-                    if !filesystem.contains_key(&cwd) {
-                        filesystem.insert(cwd.to_owned(), Vec::new());
+    commands
+        .into_iter()
+        .fold(
+            (PathBuf::new(), Filesystem::new()),
+            |(mut cwd, mut filesystem), command| {
+                match command {
+                    Command::Cd { rel_path } => {
+                        if rel_path == ".." {
+                            cwd.pop();
+                        } else {
+                            cwd.push(rel_path);
+                            if !filesystem.contains_key(&cwd) {
+                                filesystem.insert(cwd.to_owned(), Vec::new());
+                            }
+                        }
                     }
+                    Command::Ls { items } => items.into_iter().for_each(|item| {
+                        filesystem
+                            .get_mut(&cwd)
+                            .expect("values are always initialized upon entering directory")
+                            .push(item)
+                    }),
                 }
-            }
-            Command::Ls { items } => items.into_iter().for_each(|item| {
-                filesystem
-                    .get_mut(&cwd)
-                    .expect("values are always initialized upon entering directory")
-                    .push(item)
-            }),
-        }
-    }
-    filesystem
+                (cwd, filesystem)
+            },
+        )
+        .1
 }
 
 fn get_size(path: &PathBuf, sizes: &mut Sizes, filesystem: &Filesystem) -> anyhow::Result<usize> {
     if !sizes.contains_key(path) {
-        let items = filesystem.get(path).ok_or(anyhow!("invalid path"))?;
+        let items = filesystem
+            .get(path)
+            .ok_or_else(|| anyhow!("invalid path"))?;
         let size = items
             .iter()
             .map(|item| match item {
