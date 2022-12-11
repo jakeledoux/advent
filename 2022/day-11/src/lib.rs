@@ -1,7 +1,6 @@
-#![allow(unused)]
-
 use std::{num::ParseIntError, str::FromStr};
 
+use anyhow::anyhow;
 use itertools::Itertools;
 
 #[derive(Debug)]
@@ -31,13 +30,13 @@ enum OpKind {
 }
 
 impl FromStr for OpKind {
-    type Err = ();
+    type Err = anyhow::Error;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         Ok(match s {
             "+" => OpKind::Add,
             "*" => OpKind::Mul,
-            _ => return Err(()),
+            _ => return Err(anyhow!("invalid operator")),
         })
     }
 }
@@ -84,115 +83,99 @@ struct Monkey {
     inspected: usize,
 }
 
-pub fn part_one(input: &'static str) -> usize {
-    let mut monkeys = parse_input(input);
+enum WorryManagement {
+    Div,
+    Mod,
+}
 
-    for round in 0..20 {
-        // have to iterate over indices to allow mutably borrowing later
-        for monkey_i in 0..monkeys.len() {
-            let mut move_items = Vec::with_capacity(8);
-            {
-                let monkey = &mut monkeys[monkey_i];
-                for item in &monkey.items {
-                    // inspects item
-                    let mut item = monkey.op.exec(*item);
-                    // bored with item
-                    item = item / 3;
-                    move_items.push((monkey.test.exec(item), item));
-                }
-                monkey.inspected += monkey.items.len();
-                monkey.items.clear();
+fn find_monkey_business(
+    monkeys: &mut [Monkey],
+    rounds: usize,
+    worry_management: WorryManagement,
+) -> usize {
+    let product_of_divisors: usize = monkeys.iter().map(|m| m.test.div_by).product();
+
+    // avoid re-allocating this temporary vec
+    let mut move_items = Vec::with_capacity(32);
+    for _ in 0..rounds {
+        // have to iterate over indices to allow mutably borrowing recipients later
+        for i in 0..monkeys.len() {
+            let monkey = &mut monkeys[i];
+            for mut item in monkey.items.drain(..) {
+                item = monkey.op.exec(item);
+                item = match worry_management {
+                    WorryManagement::Div => item / 3,
+                    WorryManagement::Mod => item % product_of_divisors,
+                };
+                move_items.push((monkey.test.exec(item), item));
+                monkey.inspected += 1;
             }
-            for (recipient, item) in move_items {
+            // `&mut monkey` is dropped
+
+            // transfer items
+            for (recipient, item) in move_items.drain(..) {
                 monkeys[recipient].items.push(item);
             }
         }
     }
 
     monkeys
-        .into_iter()
+        .iter()
         .map(|m| m.inspected)
         .sorted()
         .rev()
         .take(2)
         .product()
+}
+
+pub fn part_one(input: &'static str) -> usize {
+    let mut monkeys = parse_input(input);
+    find_monkey_business(&mut monkeys, 20, WorryManagement::Div)
 }
 
 pub fn part_two(input: &'static str) -> usize {
     let mut monkeys = parse_input(input);
-
-    let product: usize = monkeys.iter().map(|m| m.test.div_by).product();
-    for round in 0..10_000 {
-        // have to iterate over indices to allow mutably borrowing later
-        for monkey_i in 0..monkeys.len() {
-            let mut move_items = Vec::with_capacity(8);
-            {
-                let monkey = &mut monkeys[monkey_i];
-                for item in &monkey.items {
-                    // inspects item
-                    let mut item = monkey.op.exec(*item);
-                    // bored with item
-                    item %= product;
-                    move_items.push((monkey.test.exec(item), item));
-                }
-                monkey.inspected += monkey.items.len();
-                monkey.items.clear();
-            }
-            for (recipient, item) in move_items {
-                monkeys[recipient].items.push(item);
-            }
-        }
-    }
-
-    monkeys
-        .into_iter()
-        .map(|m| m.inspected)
-        .sorted()
-        .rev()
-        .take(2)
-        .product()
+    find_monkey_business(&mut monkeys, 10_000, WorryManagement::Mod)
 }
 
 fn parse_input(input: &'static str) -> Vec<Monkey> {
+    // ugliest parser of all time
     input
         .split("\n\n")
-        // Monkey
         .map(|s| {
             let lines: Vec<_> = s.lines().skip(1).map(|s| s.trim()).collect();
-
             let items: Vec<usize> = lines[0]
                 .split_once(": ")
                 .unwrap()
                 .1
                 .split(", ")
-                .map(|s| s.parse().unwrap())
-                .collect();
-
+                .map(|s| Ok(s.parse()?))
+                .collect::<anyhow::Result<_>>()?;
             let (op_kind, rhs) = lines[1]
                 .split_once("= old ")
                 .unwrap()
                 .1
-                .split_once(" ")
+                .split_once(' ')
                 .unwrap();
             let op = Op {
-                kind: op_kind.parse().unwrap(),
-                rhs: rhs.parse().unwrap(),
+                kind: op_kind.parse()?,
+                rhs: rhs.parse()?,
             };
-
             let test = Test {
-                div_by: lines[2].split(" ").last().unwrap().parse().unwrap(),
-                pass: lines[3].split(" ").last().unwrap().parse().unwrap(),
-                fail: lines[4].split(" ").last().unwrap().parse().unwrap(),
+                div_by: lines[2].split(' ').last().unwrap().parse()?,
+                pass: lines[3].split(' ').last().unwrap().parse()?,
+                fail: lines[4].split(' ').last().unwrap().parse()?,
             };
 
-            Monkey {
+            Ok(Monkey {
                 items,
                 op,
                 test,
                 inspected: 0,
-            }
+            })
         })
-        .collect()
+        .collect::<anyhow::Result<_>>()
+        .unwrap()
 }
 
 #[cfg(test)]

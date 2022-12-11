@@ -7,6 +7,7 @@ authors = ["Jake Ledoux <contactjakeledoux@gmail.com>"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.66"
 itertools = "0.10.5"
 
 [lib]
