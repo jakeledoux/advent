@@ -40,6 +40,7 @@ fn compare(left: &[Value], right: &[Value]) -> Ordering {
 pub fn part_one(input: &'static str) -> usize {
     parse_input(input)
         .iter()
+        .tuples()
         .map(|(left, right)| compare(left, right))
         .enumerate()
         .filter_map(|(i, ord)| ord.is_lt().then_some(i + 1))
@@ -52,7 +53,6 @@ pub fn part_two(input: &'static str) -> usize {
     let divider_packets = [vec![json! {[2]}], vec![json! {[6]}]];
     input
         .into_iter()
-        .flat_map(|(left, right)| [left, right])
         .chain(divider_packets.iter().cloned())
         .sorted_by(|left, right| compare(left, right))
         .enumerate()
@@ -60,16 +60,10 @@ pub fn part_two(input: &'static str) -> usize {
         .product()
 }
 
-fn parse_input(input: &'static str) -> Vec<(Vec<Value>, Vec<Value>)> {
+fn parse_input(input: &'static str) -> Vec<Vec<Value>> {
     input
-        .split("\n\n")
-        .map(|s| s.trim().split_once('\n').unwrap())
-        .map(|(left, right)| {
-            (
-                serde_json::from_str(left).unwrap(),
-                serde_json::from_str(right).unwrap(),
-            )
-        })
+        .lines()
+        .filter_map(|s| serde_json::from_str(s).ok())
         .collect()
 }
 
