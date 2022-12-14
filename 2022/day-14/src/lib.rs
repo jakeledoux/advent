@@ -7,6 +7,16 @@ use std::{
 
 use itertools::Itertools;
 
+const SPAWN: Pos = Pos::new(500, 0);
+const SOUTH: Pos = Pos::new(0, 1);
+const SOUTHWEST: Pos = Pos::new(-1, 1);
+const SOUTHEAST: Pos = Pos::new(1, 1);
+
+enum Part {
+    One,
+    Two,
+}
+
 #[derive(Default)]
 struct Cave {
     // the hashmap isn't very performant but I don't have the time to replace it right now
@@ -39,7 +49,7 @@ impl Cave {
     pub fn debug_draw(&self) {
         let bounds = self.bounds();
         for y in (bounds.0.y)..=(bounds.1.y) {
-            println!("");
+            println!();
             for x in (bounds.0.x)..=(bounds.1.x) {
                 print!(
                     "{}",
@@ -80,7 +90,7 @@ struct Pos {
 }
 
 impl Pos {
-    pub fn new(x: isize, y: isize) -> Self {
+    pub const fn new(x: isize, y: isize) -> Self {
         Self { x, y }
     }
 
@@ -158,64 +168,44 @@ impl FromStr for Pos {
     }
 }
 
-pub fn part_one(input: &'static str) -> usize {
-    let mut cave = parse_input(input);
-    let lowest_rock = cave.bounds().1.y;
+fn simulate(cave: &mut Cave, part: Part) -> usize {
+    let floor = cave.bounds().1.y + 2;
+    let mut path = vec![SPAWN];
     for sand_blocks in 0.. {
-        let mut sand = Pos::new(500, 0);
-
         'step: loop {
-            if sand.y > lowest_rock {
-                return sand_blocks;
-            }
-            let potentials = [
-                sand + Pos::new(0, 1),
-                sand + Pos::new(-1, 1),
-                sand + Pos::new(1, 1),
-            ];
-            for new_pos in potentials {
-                if cave.get(&new_pos).is_air() {
-                    sand = new_pos;
-                    continue 'step;
+            let pos = *path.last().unwrap();
+            if pos.y + 1 < floor {
+                for new_pos in [pos + SOUTH, pos + SOUTHWEST, pos + SOUTHEAST] {
+                    if cave.get(&new_pos).is_air() {
+                        path.push(new_pos);
+                        continue 'step;
+                    }
                 }
+            } else if matches!(part, Part::One) {
+                // falling infinitely
+                return sand_blocks;
             }
             // can't move
             break;
+        }
+        let sand = path.pop().unwrap();
+        if matches!(part, Part::Two) && sand == SPAWN {
+            // spawn has filled
+            return sand_blocks + 1;
         }
         cave.add_block(sand, Block::Sand);
     }
     unreachable!()
 }
 
+pub fn part_one(input: &'static str) -> usize {
+    let mut cave = parse_input(input);
+    simulate(&mut cave, Part::One)
+}
+
 pub fn part_two(input: &'static str) -> usize {
     let mut cave = parse_input(input);
-    let floor = cave.bounds().1.y + 2;
-    for sand_blocks in 0.. {
-        if cave.get(&Pos::new(500, 0)).is_sand() {
-            return sand_blocks;
-        }
-        let mut sand = Pos::new(500, 0);
-
-        'step: loop {
-            if sand.y + 1 < floor {
-                let potentials = [
-                    sand + Pos::new(0, 1),
-                    sand + Pos::new(-1, 1),
-                    sand + Pos::new(1, 1),
-                ];
-                for new_pos in potentials {
-                    if cave.get(&new_pos).is_air() {
-                        sand = new_pos;
-                        continue 'step;
-                    }
-                }
-            }
-            // can't move
-            break;
-        }
-        cave.add_block(sand, Block::Sand);
-    }
-    unreachable!()
+    simulate(&mut cave, Part::Two)
 }
 
 fn parse_input(input: &'static str) -> Cave {
