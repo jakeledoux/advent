@@ -1,4 +1,3 @@
-#![allow(unused)]
 use std::{
     collections::HashMap,
     ops::{Add, AddAssign, Sub},
@@ -75,11 +74,6 @@ impl Block {
     #[must_use]
     fn is_air(&self) -> bool {
         matches!(self, Self::Air)
-    }
-
-    #[must_use]
-    fn is_sand(&self) -> bool {
-        matches!(self, Self::Sand)
     }
 }
 
