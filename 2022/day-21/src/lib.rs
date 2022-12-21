@@ -50,7 +50,8 @@ pub fn part_two(input: &'static str) -> i64 {
     let Expr::Math(_, lhs, rhs) = heap["root"] else { unreachable!() };
     let (lhs, rhs) = (heap[lhs], heap[rhs].eval(&heap));
 
-    // ugly binary search. don't worry, this disgusts me too. at least it works. and it's fast.
+    // ugly binary search. I realize that the right way to do this puzzle is algebraicly solving
+    // the equation for `humn`, but for today, this works and it's fast.
     let mut lower_bound = 3;
     let mut upper_bound = 10000000000000;
     let mut last_n = 0;
