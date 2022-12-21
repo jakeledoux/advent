@@ -5,14 +5,14 @@ use strum::EnumString;
 type ExprId = &'static str;
 type ExprHeap = HashMap<&'static str, Expr>;
 
-#[derive(Debug, Hash, Clone, Copy)]
+#[derive(Debug, Clone, Copy)]
 enum Expr {
-    Lit(i64),
+    Lit(f64),
     Math(Op, ExprId, ExprId),
 }
 
 impl Expr {
-    pub fn eval(&self, heap: &ExprHeap) -> i64 {
+    pub fn eval(&self, heap: &ExprHeap) -> f64 {
         match self {
             Expr::Lit(n) => *n,
             Expr::Math(op, lhs, rhs) => {
@@ -40,23 +40,23 @@ enum Op {
     Div,
 }
 
-pub fn part_one(input: &'static str) -> i64 {
+pub fn part_one(input: &'static str) -> f64 {
     let heap = parse_input(input);
     heap["root"].eval(&heap)
 }
 
-pub fn part_two(input: &'static str) -> i64 {
+pub fn part_two(input: &'static str) -> f64 {
     let mut heap = parse_input(input);
     let Expr::Math(_, lhs, rhs) = heap["root"] else { unreachable!() };
     let (lhs, rhs) = (heap[lhs], heap[rhs].eval(&heap));
 
     // ugly binary search. I realize that the right way to do this puzzle is algebraicly solving
     // the equation for `humn`, but for today, this works and it's fast.
-    let mut lower_bound = 3;
-    let mut upper_bound = 10000000000000;
-    let mut last_n = 0;
+    let mut lower_bound = 0.0;
+    let mut upper_bound = 10000000000000.0;
+    let mut last_n = 0.0;
     loop {
-        let n = lower_bound + ((upper_bound - lower_bound) / 2);
+        let n = lower_bound + ((upper_bound - lower_bound) / 2.0);
         if n == last_n {
             panic!("converged with no answer");
         }
@@ -100,11 +100,11 @@ mod tests {
 
     #[test]
     fn test_part_one() {
-        assert_eq!(part_one(SAMPLE), 152);
+        assert_eq!(part_one(SAMPLE), 152.0);
     }
 
     #[test]
     fn test_part_two() {
-        assert_eq!(part_two(SAMPLE), 301);
+        assert_eq!(part_two(SAMPLE), 301.0);
     }
 }
