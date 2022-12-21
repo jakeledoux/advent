@@ -1,0 +1,21 @@
+[package]
+name = "aoc-2022-day-19"
+version = "0.1.0"
+edition = "2021"
+authors = ["Jake Ledoux <contactjakeledoux@gmail.com>"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+cached = "0.41.0"
+derive_more = "0.99.17"
+itertools = "0.10.5"
+regex = "1.7.0"
+strum = { version = "0.24.1", features = ["derive"] }
+
+[lib]
+doctest = false
+
+[[bin]]
+name = "aoc-2022-day-19"
+test = false
